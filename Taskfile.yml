@@ -1,8 +1,0 @@
-version: '3'
-
-tasks:
-  deploy:
-    cmds:
-      - brewkit b build
-      - docker build . --tag="localhost:5000/app/guardian:master"
-      - docker push localhost:5000/app/guardian:master
