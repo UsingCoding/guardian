@@ -12,7 +12,8 @@ import (
 	"guardian/internal/common/proc"
 	"guardian/internal/guardian/app/config"
 	infraconfig "guardian/internal/guardian/infrastructure/config"
-	infraproxy "guardian/internal/guardian/infrastructure/proxy"
+	infraproxy "guardian/internal/guardian/infrastructure/httpproxy"
+	"guardian/internal/guardian/infrastructure/tcpproxy"
 )
 
 func proxy() *cli.Command {
@@ -51,7 +52,7 @@ func executeProxy(ctx *cli.Context) error {
 		router,
 	)
 
-	for _, server := range c.Servers {
+	for _, server := range c.HTTPProxies {
 		p := infraproxy.NewProxy(
 			server.Downstream,
 			server.Upstream,
@@ -64,6 +65,18 @@ func executeProxy(ctx *cli.Context) error {
 			server.Address,
 			p.Proxy(),
 		)
+	}
+
+	if len(c.TCPProxies) != 0 {
+		p := tcpproxy.Proxy{}
+		hub.AddProc(proc.NewProc(
+			func() error {
+				return p.Proxy(ctx.Context, c.TCPProxies)
+			},
+			func() error {
+				return nil
+			},
+		))
 	}
 
 	return hub.Wait()

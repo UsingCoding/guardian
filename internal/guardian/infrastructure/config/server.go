@@ -4,7 +4,12 @@ import (
 	"github.com/hashicorp/hcl/v2"
 )
 
-type server struct {
+type tcpProxy struct {
+	SrcAdress  string `hcl:"src,label"`
+	DstAddress string `hcl:"destination"`
+}
+
+type httpProxy struct {
 	Address string `hcl:"address,label"`
 
 	Limit limit `hcl:"limit,block"`

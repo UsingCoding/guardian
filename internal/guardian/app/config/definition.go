@@ -11,7 +11,13 @@ import (
 type AppConfig struct {
 	Healthcheck  Healthcheck
 	UserProvider maybe.Maybe[user.Provider]
-	Servers      []Server
+	TCPProxies   []TCPProxy
+	HTTPProxies  []HTTPProxy
+}
+
+type TCPProxy struct {
+	SrcAddress string
+	DstAddress string
 }
 
 type Healthcheck struct {
@@ -19,7 +25,7 @@ type Healthcheck struct {
 	Path    string
 }
 
-type Server struct {
+type HTTPProxy struct {
 	Address string
 
 	Limit Limit

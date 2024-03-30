@@ -7,7 +7,15 @@ userprovider ldap {
     address = "glauth:8080"
 }
 
-server ":8000" {
+tcpproxy ":80" {
+    destination = "127.0.0.1:3000"
+}
+
+tcpproxy ":443" {
+    destination = "127.0.0.1:3000"
+}
+
+httproxy ":8000" {
     downstream filebrowser {
         upstream = "filebrowser"
 

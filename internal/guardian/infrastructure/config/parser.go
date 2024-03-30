@@ -47,7 +47,7 @@ func (p Parser) ParseData(filename string, data []byte) (config.AppConfig, error
 		provider = maybe.NewJust(p)
 	}
 
-	servers, err := mapServers(c.Servers, provider)
+	servers, err := mapHTTPProxies(c.HTTPProxies, provider)
 	if err != nil {
 		return config.AppConfig{}, err
 	}
@@ -58,7 +58,8 @@ func (p Parser) ParseData(filename string, data []byte) (config.AppConfig, error
 			Path:    c.Healthcheck.Path,
 		},
 		UserProvider: provider,
-		Servers:      servers,
+		TCPProxies:   mapTCPProxy(c.TCPProxies),
+		HTTPProxies:  servers,
 	}, nil
 }
 
@@ -71,19 +72,28 @@ func mapUserProvider(provider userProvider) (user.Provider, error) {
 	}
 }
 
-func mapServers(servers []server, provider maybe.Maybe[user.Provider]) ([]config.Server, error) {
-	return slices.MapErr(servers, func(s server) (config.Server, error) {
+func mapTCPProxy(proxies []tcpProxy) []config.TCPProxy {
+	return slices.Map(proxies, func(p tcpProxy) config.TCPProxy {
+		return config.TCPProxy{
+			SrcAddress: p.SrcAdress,
+			DstAddress: p.DstAddress,
+		}
+	})
+}
+
+func mapHTTPProxies(proxies []httpProxy, provider maybe.Maybe[user.Provider]) ([]config.HTTPProxy, error) {
+	return slices.MapErr(proxies, func(s httpProxy) (config.HTTPProxy, error) {
 		d, err := mapDownstream(s, provider)
 		if err != nil {
-			return config.Server{}, err
+			return config.HTTPProxy{}, err
 		}
 
 		u, err := mapUpstream(s.Upstream)
 		if err != nil {
-			return config.Server{}, err
+			return config.HTTPProxy{}, err
 		}
 
-		return config.Server{
+		return config.HTTPProxy{
 			Address: s.Address,
 			Limit: config.Limit{
 				RPS:   s.Limit.RPS,
@@ -95,7 +105,7 @@ func mapServers(servers []server, provider maybe.Maybe[user.Provider]) ([]config
 	})
 }
 
-func mapDownstream(s server, provider maybe.Maybe[user.Provider]) ([]appdownstream.Downstream, error) {
+func mapDownstream(s httpProxy, provider maybe.Maybe[user.Provider]) ([]appdownstream.Downstream, error) {
 	return slices.MapErr(s.Downstream, func(d downstream) (appdownstream.Downstream, error) {
 		if !maybe.Valid(findUpstream(s.Upstream, d.UpstreamID)) {
 			return appdownstream.Downstream{}, errors.Errorf(

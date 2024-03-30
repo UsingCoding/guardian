@@ -3,7 +3,8 @@ package config
 type appConfig struct {
 	Healthcheck  healthcheck   `hcl:"healthcheck,block"`
 	UserProvider *userProvider `hcl:"userprovider,block"`
-	Servers      []server      `hcl:"server,block"`
+	TCPProxies   []tcpProxy    `hcl:"tcpproxy,block"`
+	HTTPProxies  []httpProxy   `hcl:"httpproxy,block"`
 }
 
 type healthcheck struct {

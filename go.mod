@@ -7,6 +7,7 @@ require (
 	github.com/gofrs/uuid/v5 v5.0.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/hcl/v2 v2.19.1
+	github.com/inetaf/tcpproxy v0.0.0-20240214030015-3ce58045626c
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/urfave/cli/v2 v2.3.0

@@ -10,7 +10,7 @@ import (
 const (
 	initState int32 = iota
 	runningState
-	soppedState
+	stoppedState
 )
 
 var ErrStopped = errors.New("hub is stopped by signal without errors")
@@ -84,7 +84,7 @@ func (h *hub) startProc(proc Proc) {
 	started := atomic.CompareAndSwapInt32(&h.state, initState, runningState)
 
 	h.wg.Add(1)
-	if !started && atomic.LoadInt32(&h.state) == soppedState {
+	if !started && atomic.LoadInt32(&h.state) == stoppedState {
 		h.wg.Done()
 		return
 	}
@@ -99,8 +99,8 @@ func (h *hub) startProc(proc Proc) {
 }
 
 func (h *hub) stop() error {
-	stopped := atomic.CompareAndSwapInt32(&h.state, initState, soppedState) ||
-		atomic.CompareAndSwapInt32(&h.state, runningState, soppedState)
+	stopped := atomic.CompareAndSwapInt32(&h.state, initState, stoppedState) ||
+		atomic.CompareAndSwapInt32(&h.state, runningState, stoppedState)
 	if !stopped {
 		return nil
 	}
@@ -118,7 +118,7 @@ func (h *hub) stop() error {
 }
 
 func (h *hub) reportError(err error) {
-	if atomic.LoadInt32(&h.state) == soppedState {
+	if atomic.LoadInt32(&h.state) == stoppedState {
 		return
 	}
 
